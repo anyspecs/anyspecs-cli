@@ -138,44 +138,50 @@ class CursorExtractor(BaseExtractor):
         return out
     
     def list_sessions(self) -> List[Dict[str, Any]]:
-        """List available chat sessions with metadata."""
+        """List Cursor chat sessions for current workspace only."""
         chats = self.extract_chats()
         sessions = []
+        
+        # Get current project name to filter sessions
+        from ..utils.paths import get_project_name
+        current_project = get_project_name().lower()
         
         for chat in chats:
             session_id = chat.get('session', {}).get('composerId', 'unknown')[:8]
             project_name = chat.get('project', {}).get('name', 'Unknown Project')
             msg_count = len(chat.get('messages', []))
             
-            # Format date
-            date_str = "Unknown date"
-            created_at = chat.get('session', {}).get('createdAt')
-            if created_at:
-                try:
-                    import datetime
-                    if created_at > 1e10:  # milliseconds
-                        created_at = created_at / 1000
-                    date_obj = datetime.datetime.fromtimestamp(created_at)
-                    date_str = date_obj.strftime("%Y-%m-%d %H:%M")
-                except:
-                    pass
-            
-            # Get preview of first message
-            preview = "No messages"
-            messages = chat.get('messages', [])
-            if messages:
-                first_msg = messages[0].get('content', '')
-                preview = first_msg[:60] + "..." if len(first_msg) > 60 else first_msg
-                preview = preview.replace('\n', ' ')
-            
-            sessions.append({
-                'session_id': session_id,
-                'project': project_name,
-                'date': date_str,
-                'message_count': msg_count,
-                'preview': preview,
-                'workspace_id': chat.get('workspace_id', 'unknown')
-            })
+            # Only include sessions from current workspace/project
+            if current_project in project_name.lower() or project_name.lower() in current_project:
+                # Format date
+                date_str = "Unknown date"
+                created_at = chat.get('session', {}).get('createdAt')
+                if created_at:
+                    try:
+                        import datetime
+                        if created_at > 1e10:  # milliseconds
+                            created_at = created_at / 1000
+                        date_obj = datetime.datetime.fromtimestamp(created_at)
+                        date_str = date_obj.strftime("%Y-%m-%d %H:%M")
+                    except:
+                        pass
+                
+                # Get preview of first message
+                preview = "No messages"
+                messages = chat.get('messages', [])
+                if messages:
+                    first_msg = messages[0].get('content', '')
+                    preview = first_msg[:60] + "..." if len(first_msg) > 60 else first_msg
+                    preview = preview.replace('\n', ' ')
+                
+                sessions.append({
+                    'session_id': session_id,
+                    'project': project_name,
+                    'date': date_str,
+                    'message_count': msg_count,
+                    'preview': preview,
+                    'workspace_id': chat.get('workspace_id', 'unknown')
+                })
         
         return sessions
 

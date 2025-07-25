@@ -7,6 +7,7 @@ AnySpecs CLI is a unified command-line tool for exporting chat history from mult
 - **Multi-Source Support**: Export from Cursor AI, Claude Code, and Kiro Records
 - **Multiple Export Formats**: Markdown, HTML, and JSON
 - **Project-Based Filtering**: Export sessions by project or current directory
+- **Workspace Filtering**: Cursor sessions show only current workspace sessions in list view
 - **Flexible Session Management**: List, filter, and export specific sessions
 - **Server Upload**: Upload exported files to remote servers
 - **Default Export Directory**: All exports save to `.anyspecs/` by default for organized storage
