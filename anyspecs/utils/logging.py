@@ -35,10 +35,10 @@ def setup_logging(level: Optional[str] = None, verbose: bool = False) -> logging
     )
     
     # Return logger for the package
-    logger = logging.getLogger('anyspec')
+    logger = logging.getLogger('anyspecs')
     return logger
 
 
 def get_logger(name: str) -> logging.Logger:
     """Get a logger for a specific module."""
-    return logging.getLogger(f'anyspec.{name}') 
+    return logging.getLogger(f'anyspecs.{name}') 

@@ -1,5 +1,5 @@
 """
-Unified CLI interface for AnySpec chat history export tool.
+Unified CLI interface for AnySpecs chat history export tool.
 """
 
 import argparse
@@ -16,8 +16,8 @@ from .exporters.claude import ClaudeExtractor
 from .core.formatters import JSONFormatter, MarkdownFormatter, HTMLFormatter
 
 
-class AnySpecCLI:
-    """Main CLI class for AnySpec."""
+class AnySpecsCLI:
+    """Main CLI class for AnySpecs."""
     
     def __init__(self):
         self.extractors = {
@@ -65,7 +65,7 @@ class AnySpecCLI:
     def _create_parser(self) -> argparse.ArgumentParser:
         """Create the argument parser."""
         parser = argparse.ArgumentParser(
-            description='AnySpec CLI - Universal Chat History Export Tool',
+            description='AnySpecs CLI - Universal Chat History Export Tool',
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog="""
 Examples:
@@ -384,7 +384,7 @@ Examples:
 
 def main():
     """Main entry point."""
-    cli = AnySpecCLI()
+    cli = AnySpecsCLI()
     return cli.run()
 
 

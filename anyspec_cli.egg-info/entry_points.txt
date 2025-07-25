@@ -1,3 +1,0 @@
-[console_scripts]
-anyspec = anyspec.cli:main
-anyspec-cli = anyspec.cli:main

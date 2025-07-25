@@ -1,12 +1,12 @@
 """
-AnySpec CLI - Universal Chat History Export Tool
+AnySpecs CLI - Universal Chat History Export Tool
 
 A unified CLI tool for exporting chat history from multiple AI assistants.
 Supports Cursor AI and Claude Code with various export formats.
 """
 
-__version__ = "1.0.0"
-__author__ = "AnySpec Team"
+__version__ = "0.0.1"
+__author__ = "AnySpecs Team"
 
 from .cli import main
 

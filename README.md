@@ -1,6 +1,6 @@
-# AnySpec CLI - Universal Chat History Export Tool
+# AnySpecs CLI - Universal Chat History Export Tool
 
-AnySpec CLI is a unified command-line tool for exporting chat history from multiple AI assistants. It currently supports **Cursor AI** and **Claude Code**, with support for various export formats including Markdown, HTML, and JSON.
+AnySpecs CLI is a unified command-line tool for exporting chat history from multiple AI assistants. It currently supports **Cursor AI** and **Claude Code**, with support for various export formats including Markdown, HTML, and JSON.
 
 ## Features
 
@@ -17,8 +17,8 @@ AnySpec CLI is a unified command-line tool for exporting chat history from multi
 
 ```bash
 # Clone the repository
-git clone https://github.com/anyspec/anyspec-cli.git
-cd anyspec-cli
+git clone https://github.com/anyspecs/anyspecs-cli.git
+cd anyspecs-cli
 
 # Install in development mode
 pip install -e .
@@ -30,7 +30,7 @@ pip install .
 ### Using pip (when published)
 
 ```bash
-pip install anyspec-cli
+pip install anyspecs-cli
 ```
 
 ## Quick Start
@@ -39,38 +39,38 @@ pip install anyspec-cli
 
 ```bash
 # List all chat sessions from all sources
-anyspec list
+anyspecs list
 
 # List only Cursor sessions
-anyspec list --source cursor
+anyspecs list --source cursor
 
 # List only Claude sessions  
-anyspec list --source claude
+anyspecs list --source claude
 
 # Show detailed information
-anyspec list --verbose
+anyspecs list --verbose
 ```
 
 ### Export Chat Sessions
 
 ```bash
 # Export current project's sessions to Markdown (default)
-anyspec export
+anyspecs export
 
 # Export all sessions to HTML
-anyspec export --all-projects --format html
+anyspecs export --all-projects --format html
 
 # Export specific session
-anyspec export --session-id abc123 --format json
+anyspecs export --session-id abc123 --format json
 
 # Export Claude sessions only
-anyspec export --source claude --format markdown
+anyspecs export --source claude --format markdown
 
 # Export with custom output path
-anyspec export --output ./exports --format html
+anyspecs export --output ./exports --format html
 
 # Export and upload to server
-anyspec export --format json --upload --server https://myserver.com --username user --password pass
+anyspecs export --format json --upload --server https://myserver.com --username user --password pass
 ```
 
 ## Usage Examples
@@ -79,29 +79,29 @@ anyspec export --format json --upload --server https://myserver.com --username u
 
 ```bash
 # List all available chat sessions
-anyspec list
+anyspecs list
 
 # Export current project's chat history to Markdown
-anyspec export
+anyspecs export
 
 # Export all projects to HTML format
-anyspec export --all-projects --format html
+anyspecs export --all-projects --format html
 ```
 
 ### Advanced Usage
 
 ```bash
 # Export specific project's sessions
-anyspec export --project myproject --format json
+anyspecs export --project myproject --format json
 
 # Export last 10 sessions only
-anyspec export --limit 10 --format markdown
+anyspecs export --limit 10 --format markdown
 
 # Export specific session to custom location
-anyspec export --session-id abc123 --output ~/Documents/chat-export.html --format html
+anyspecs export --session-id abc123 --output ~/Documents/chat-export.html --format html
 
 # Export and upload to remote server
-anyspec export --format json --upload \
+anyspecs export --format json --upload \
   --server https://api.example.com \
   --username myuser \
   --password mypass
@@ -117,7 +117,7 @@ anyspec export --format json --upload \
 ### List Command
 
 ```bash
-anyspec list [OPTIONS]
+anyspecs list [OPTIONS]
 ```
 
 **Options:**
@@ -127,7 +127,7 @@ anyspec list [OPTIONS]
 ### Export Command
 
 ```bash
-anyspec export [OPTIONS]
+anyspecs export [OPTIONS]
 ```
 
 **Options:**
@@ -190,8 +190,8 @@ Structured data format with:
 ## Package Structure
 
 ```
-anyspec-cli/
-├── anyspec/
+anyspecs-cli/
+├── anyspecs/
 │   ├── __init__.py          # Main package
 │   ├── cli.py               # CLI interface
 │   ├── config.py           # Configuration management
@@ -212,7 +212,7 @@ anyspec-cli/
 
 ## Configuration
 
-AnySpec CLI stores configuration in `~/.anyspec/config.json`. You can customize:
+AnySpecs CLI stores configuration in `~/.anyspecs/config.json`. You can customize:
 
 - Default export format
 - Default output directory
@@ -227,8 +227,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ```bash
 # Clone the repository
-git clone https://github.com/anyspec/anyspec-cli.git
-cd anyspec-cli
+git clone https://github.com/anyspecs/anyspecs-cli.git
+cd anyspecs-cli
 
 # Install in development mode with dev dependencies
 pip install -e ".[dev]"
@@ -237,10 +237,10 @@ pip install -e ".[dev]"
 pytest
 
 # Format code
-black anyspec/
+black anyspecs/
 
 # Type checking
-mypy anyspec/
+mypy anyspecs/
 ```
 
 ## License
@@ -249,7 +249,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
-### v1.0.0
+### v0.0.1
 - Initial release
 - Support for Cursor AI and Claude Code
 - Multiple export formats (Markdown, HTML, JSON)
@@ -261,6 +261,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues or have questions, please:
 
-1. Check the [documentation](https://github.com/anyspec/anyspec-cli/wiki)
-2. Search [existing issues](https://github.com/anyspec/anyspec-cli/issues)
-3. Create a [new issue](https://github.com/anyspec/anyspec-cli/issues/new)
+1. Check the [documentation](https://github.com/anyspecs/anyspecs-cli/wiki)
+2. Search [existing issues](https://github.com/anyspecs/anyspecs-cli/issues)
+3. Create a [new issue](https://github.com/anyspecs/anyspecs-cli/issues/new)

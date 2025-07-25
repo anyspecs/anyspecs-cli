@@ -1,5 +1,5 @@
 """
-Configuration management for AnySpec CLI.
+Configuration management for AnySpecs CLI.
 """
 
 import os
@@ -8,10 +8,10 @@ from typing import Dict, Any, Optional
 
 
 class Config:
-    """Configuration class for AnySpec."""
+    """Configuration class for AnySpecs."""
     
     def __init__(self):
-        self.config_dir = Path.home() / '.anyspec'
+        self.config_dir = Path.home() / '.anyspecs'
         self.config_file = self.config_dir / 'config.json'
         self._config = {}
         
