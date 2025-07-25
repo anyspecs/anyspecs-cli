@@ -1,6 +1,9 @@
-# AnySpecs CLI
-
 <div align="center">
+
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/headerDark.svg" />
+    <img src="assets/headerLight.svg" alt="AnySpecs CLI" />
+  </picture>
 
 ***Code is cheap, Show me Any Specs.***
   
@@ -14,15 +17,14 @@ AnySpecs CLI is a unified command-line tool for exporting chat history from mult
 
 ## Features
 
-- **Multi-Source Support**: Export from Cursor AI, Claude Code, and Kiro Records
+- **Multi-Source Support**: Export from Cursor AI, Claude Code, and Kiro Records(More to come)
 - **Multiple Export Formats**: Markdown, HTML, and JSON
-- **Project-Based Filtering**: Export sessions by project or current directory
-- **Workspace Filtering**: Cursor sessions show only current workspace sessions in list view
+- **Project-Based and Workspace Filtering**: Export sessions by project or current directory
 - **Flexible Session Management**: List, filter, and export specific sessions
-- **Server Upload**: Upload exported files to remote servers
 - **Default Export Directory**: All exports save to `.anyspecs/` by default for organized storage
-- **Cross-Platform**: Works on Windows, macOS, and Linux
-- **Organized Package Structure**: Clean, modular codebase with separate packages for different functionality
+- **Terminal history and files diff history**: Export terminal history and files diff history(WIP)
+- **AI Summary**: Summarize chat history into a single file (WIP)
+- **Server Upload and Share**: Upload exported files to remote servers (WIP)
 
 ## Installation
 
@@ -40,7 +42,7 @@ pip install -e .
 pip install .
 ```
 
-### Using pip (when published)
+### Using pip
 
 ```bash
 pip install anyspecs
@@ -48,20 +50,14 @@ pip install anyspecs
 
 ## Quick Start
 
-### List All Chat Sessions
+### List All Chat Sessions in this workspace
 
 ```bash
-# List all chat sessions from all sources
+# List all chat sessions in this workspace from all sources
 anyspecs list
 
-# List only Cursor sessions
-anyspecs list --source cursor
-
-# List only Claude sessions  
-anyspecs list --source claude
-
-# List only Kiro sessions
-anyspecs list --source kiro
+# List only Cursor/Claude/Kiro sessions in this workspace
+anyspecs list --source cursor/claude/kiro
 
 # Show detailed information
 anyspecs list --verbose
@@ -88,79 +84,9 @@ anyspecs export --source kiro --format html
 # Export with custom output path
 anyspecs export --output ./exports --format html
 
-# Export and upload to server
+# Export and upload to server(WIP)
 anyspecs export --format json --upload --server https://myserver.com --username user --password pass
 ```
-
-## Usage Examples
-
-### Basic Usage
-
-```bash
-# List all available chat sessions
-anyspecs list
-
-# Export current project's chat history to Markdown (saves to .anyspecs/)
-anyspecs export
-
-# Export all projects to HTML format (saves to .anyspecs/)
-anyspecs export --all-projects --format html
-```
-
-### Advanced Usage
-
-```bash
-# Export specific project's sessions (saves to .anyspecs/)
-anyspecs export --project myproject --format json
-
-# Export last 10 sessions only (saves to .anyspecs/)
-anyspecs export --limit 10 --format markdown
-
-# Export specific session to custom location
-anyspecs export --session-id abc123 --output ~/Documents/chat-export.html --format html
-
-# Export and upload to remote server
-anyspecs export --format json --upload \
-  --server https://api.example.com \
-  --username myuser \
-  --password mypass
-```
-
-## Command Reference
-
-### Global Options
-
-- `--verbose, -v`: Enable verbose logging
-- `--help, -h`: Show help message
-
-### List Command
-
-```bash
-anyspecs list [OPTIONS]
-```
-
-**Options:**
-- `--source, -s {cursor,claude,kiro,all}`: Source to list sessions from (default: all)
-- `--verbose, -v`: Display detailed information
-
-### Export Command
-
-```bash
-anyspecs export [OPTIONS]
-```
-
-**Options:**
-- `--source, -s {cursor,claude,kiro,all}`: Source to export from (default: all)
-- `--format, -f {json,markdown,md,html}`: Export format (default: markdown)
-- `--output, -o PATH`: Output directory or file path (default: .anyspecs/)
-- `--session-id, --session ID`: Export specific session ID
-- `--project, -p NAME`: Filter by project name
-- `--all-projects, -a`: Export all projects' sessions
-- `--limit, -l NUMBER`: Limit number of sessions to export
-- `--upload`: Upload exported file to server
-- `--server URL`: Server URL for upload (default: http://localhost:4999)
-- `--username USER`: Username for server authentication
-- `--password PASS`: Password for server authentication
 
 ## Supported Sources
 
@@ -183,36 +109,8 @@ Extracts chat history from Claude Code's JSONL history files, including:
 ### Kiro Records
 
 Extracts and combines markdown documents from `.kiro` directory, including:
-- All markdown files in the directory and subdirectories
 - File metadata (name, modification time)
-- Combined content as a single session
-- Automatic project context detection
-
-## Export Formats
-
-### Markdown (.md)
-
-Clean, readable format with:
-- Project information header
-- Conversation history with role indicators
-- Code block preservation
-- Timestamps and metadata
-
-### HTML (.html)
-
-Rich web format with:
-- Styled conversation display
-- User/Assistant message differentiation
-- Code syntax highlighting
-- Responsive design
-
-### JSON (.json)
-
-Structured data format with:
-- Complete conversation data
-- Metadata and timestamps
-- Project information
-- Source attribution
+- Automatic project summary detection
 
 ## Package Structure
 
@@ -228,6 +126,7 @@ anyspecs-cli/
 │   ├── exporters/          # Source-specific extractors
 │   │   ├── cursor.py       # Cursor AI extractor
 │   │   └── claude.py       # Claude Code extractor
+│   │   └── kiro.py         # Kiro Records extractor
 │   └── utils/              # Utility modules
 │       ├── logging.py      # Logging configuration
 │       ├── paths.py        # Path utilities
@@ -236,15 +135,6 @@ anyspecs-cli/
 ├── requirements.txt       # Dependencies
 └── README.md             # This file
 ```
-
-## Configuration
-
-AnySpecs CLI stores configuration in `~/.anyspecs/config.json`. You can customize:
-
-- Default export format
-- Default output directory
-- Source preferences
-- Server settings
 
 ## Contributing
 
