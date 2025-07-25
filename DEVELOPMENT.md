@@ -195,10 +195,16 @@ python -m twine upload dist/*
 
 1. Create new extractor in `anyspecs/exporters/`
 2. Inherit from `BaseExtractor`
-3. Implement required methods
-4. Add to `__init__.py`
-5. Update CLI to include new source
-6. Add tests
+3. Implement required methods:
+   - `extract_chats()`: Extract chat data
+   - `list_sessions()`: List available sessions
+4. Add to `anyspecs/exporters/__init__.py`
+5. Update CLI in `anyspecs/cli.py`:
+   - Add to `self.extractors` dict
+   - Add to source choices in argument parsers
+   - Update sources_to_check lists
+6. Update documentation
+7. Add tests
 
 ### Adding a New Export Format
 

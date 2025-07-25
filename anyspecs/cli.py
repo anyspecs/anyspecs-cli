@@ -13,6 +13,7 @@ from .utils.paths import get_project_name
 from .utils.upload import upload_file_to_server
 from .exporters.cursor import CursorExtractor
 from .exporters.claude import ClaudeExtractor
+from .exporters.kiro import KiroExtractor
 from .core.formatters import JSONFormatter, MarkdownFormatter, HTMLFormatter
 
 
@@ -22,7 +23,8 @@ class AnySpecsCLI:
     def __init__(self):
         self.extractors = {
             'cursor': CursorExtractor(),
-            'claude': ClaudeExtractor()
+            'claude': ClaudeExtractor(),
+            'kiro': KiroExtractor()
         }
         self.formatters = {
             'json': JSONFormatter(),
@@ -71,8 +73,10 @@ class AnySpecsCLI:
 Examples:
   %(prog)s list                                    # List all chat sessions from all sources
   %(prog)s list --source cursor                   # List only Cursor sessions
+  %(prog)s list --source kiro                     # List only Kiro sessions
   %(prog)s export --format markdown               # Export current project's sessions to Markdown
   %(prog)s export --source claude --format json   # Export Claude sessions to JSON
+  %(prog)s export --source kiro --format html     # Export Kiro records to HTML
   %(prog)s export --session-id abc123 --format html --output chat.html
   %(prog)s export --project myproject --format json --upload --server http://localhost:4999
             """
@@ -86,7 +90,7 @@ Examples:
         # list command
         list_parser = subparsers.add_parser('list', help='List all chat sessions')
         list_parser.add_argument('--source', '-s', 
-                               choices=['cursor', 'claude', 'all'], 
+                               choices=['cursor', 'claude', 'kiro', 'all'], 
                                default='all',
                                help='Source to list sessions from (default: all)')
         list_parser.add_argument('--verbose', '-v', action='store_true', help='Display detailed information')
@@ -94,7 +98,7 @@ Examples:
         # export command
         export_parser = subparsers.add_parser('export', help='Export chat sessions')
         export_parser.add_argument('--source', '-s',
-                                 choices=['cursor', 'claude', 'all'],
+                                 choices=['cursor', 'claude', 'kiro', 'all'],
                                  default='all',
                                  help='Source to export from (default: all)')
         export_parser.add_argument('--format', '-f', 
@@ -131,7 +135,7 @@ Examples:
         
         # Collect sessions from all requested sources
         all_sessions = []
-        sources_to_check = ['cursor', 'claude'] if args.source == 'all' else [args.source]
+        sources_to_check = ['cursor', 'claude', 'kiro'] if args.source == 'all' else [args.source]
         
         for source in sources_to_check:
             extractor = self.extractors[source]
@@ -184,7 +188,7 @@ Examples:
         
         # Collect chats from all requested sources
         all_chats = []
-        sources_to_check = ['cursor', 'claude'] if args.source == 'all' else [args.source]
+        sources_to_check = ['cursor', 'claude', 'kiro'] if args.source == 'all' else [args.source]
         
         for source in sources_to_check:
             extractor = self.extractors[source]

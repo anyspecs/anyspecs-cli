@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Type hints support (py.typed marker)
 - Pre-commit hooks configuration
 - Enhanced development tools configuration
+- Kiro Records support: Extract and export markdown files from .kiro directory
 
 ## [0.0.1] - 2025-07-25
 
@@ -19,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release of AnySpecs CLI
 - Support for Cursor AI chat history extraction
 - Support for Claude Code chat history extraction
+- Support for Kiro Records extraction from .kiro directory
 - Multiple export formats: Markdown, HTML, JSON
 - Project-based filtering and session management
 - Upload functionality to remote servers
@@ -26,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Well-organized package structure with modular design
 
 ### Features
-- **Multi-Source Support**: Extract from Cursor AI and Claude Code
+- **Multi-Source Support**: Extract from Cursor AI, Claude Code, and Kiro Records
 - **Export Formats**: Markdown (.md), HTML (.html), JSON (.json)
 - **Project Filtering**: Filter by current project or specify custom projects
 - **Session Management**: List, filter, and export specific chat sessions

@@ -1,10 +1,10 @@
 # AnySpecs CLI - Universal Chat History Export Tool
 
-AnySpecs CLI is a unified command-line tool for exporting chat history from multiple AI assistants. It currently supports **Cursor AI** and **Claude Code**, with support for various export formats including Markdown, HTML, and JSON.
+AnySpecs CLI is a unified command-line tool for exporting chat history from multiple AI assistants. It currently supports **Cursor AI**, **Claude Code**, and **Kiro Records**, with support for various export formats including Markdown, HTML, and JSON.
 
 ## Features
 
-- **Multi-Source Support**: Export from Cursor AI and Claude Code
+- **Multi-Source Support**: Export from Cursor AI, Claude Code, and Kiro Records
 - **Multiple Export Formats**: Markdown, HTML, and JSON
 - **Project-Based Filtering**: Export sessions by project or current directory
 - **Session Management**: List, filter, and export specific chat sessions
@@ -47,6 +47,9 @@ anyspecs list --source cursor
 # List only Claude sessions  
 anyspecs list --source claude
 
+# List only Kiro sessions
+anyspecs list --source kiro
+
 # Show detailed information
 anyspecs list --verbose
 ```
@@ -65,6 +68,9 @@ anyspecs export --session-id abc123 --format json
 
 # Export Claude sessions only
 anyspecs export --source claude --format markdown
+
+# Export Kiro records only
+anyspecs export --source kiro --format html
 
 # Export with custom output path
 anyspecs export --output ./exports --format html
@@ -121,7 +127,7 @@ anyspecs list [OPTIONS]
 ```
 
 **Options:**
-- `--source, -s {cursor,claude,all}`: Source to list sessions from (default: all)
+- `--source, -s {cursor,claude,kiro,all}`: Source to list sessions from (default: all)
 - `--verbose, -v`: Display detailed information
 
 ### Export Command
@@ -131,7 +137,7 @@ anyspecs export [OPTIONS]
 ```
 
 **Options:**
-- `--source, -s {cursor,claude,all}`: Source to export from (default: all)
+- `--source, -s {cursor,claude,kiro,all}`: Source to export from (default: all)
 - `--format, -f {json,markdown,md,html}`: Export format (default: markdown)
 - `--output, -o PATH`: Output directory or file path
 - `--session-id, --session ID`: Export specific session ID
@@ -160,6 +166,14 @@ Extracts chat history from Claude Code's JSONL history files, including:
 - Tool calls and results
 - Session metadata
 - Project context
+
+### Kiro Records
+
+Extracts and combines markdown documents from `.kiro` directory, including:
+- All markdown files in the directory and subdirectories
+- File metadata (name, modification time)
+- Combined content as a single session
+- Automatic project context detection
 
 ## Export Formats
 
