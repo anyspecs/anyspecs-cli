@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "anyspecs"
-version = "0.0.1"
+version = "0.0.2"
 description = "Specs Export Tool for AI Assistants"
 readme = "README.md"
 license = { file="LICENSE" }

@@ -33,7 +33,7 @@ pip install .
 ### Using pip (when published)
 
 ```bash
-pip install anyspecs-cli
+pip install anyspecs
 ```
 
 ## Quick Start
@@ -265,6 +265,11 @@ mypy anyspecs/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.0.2
+- Kiro Records support: Extract and export files from .kiro directory
+- Default export directory: All exports now save to .anyspecs/ by default
+- Workspace filtering: Cursor sessions now show only current workspace sessions in list command
 
 ### v0.0.1
 - Initial release
