@@ -1,0 +1,13 @@
+click>=8.0.0          # CLI framework
+rich>=13.0.0         # Beautiful terminal output
+pathlib2>=2.3.7      # Path manipulation
+pyyaml>=6.0          # YAML configuration support
+
+# Data processing
+python-dateutil>=2.8.0  # Date processing
+
+# Template and formatting
+jinja2>=3.0.0        # HTML template engine
+
+# Optional dependencies
+# pandas>=1.5.0      # Data analysis (if needed) 
