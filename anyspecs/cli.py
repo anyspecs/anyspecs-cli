@@ -74,9 +74,9 @@ Examples:
   %(prog)s list                                    # List all chat sessions from all sources
   %(prog)s list --source cursor                   # List only Cursor sessions
   %(prog)s list --source kiro                     # List only Kiro sessions
-  %(prog)s export --format markdown               # Export current project's sessions to Markdown
-  %(prog)s export --source claude --format json   # Export Claude sessions to JSON
-  %(prog)s export --source kiro --format html     # Export Kiro records to HTML
+  %(prog)s export --format markdown               # Export current project's sessions to .anyspecs/
+  %(prog)s export --source claude --format json   # Export Claude sessions to .anyspecs/
+  %(prog)s export --source kiro --format html     # Export Kiro records to .anyspecs/
   %(prog)s export --session-id abc123 --format html --output chat.html
   %(prog)s export --project myproject --format json --upload --server http://localhost:4999
             """
@@ -107,7 +107,7 @@ Examples:
                                  help='Export format (default: markdown)')
         export_parser.add_argument('--output', '-o', 
                                  type=pathlib.Path,
-                                 help='Output directory or file path')
+                                 help='Output directory or file path (default: .anyspecs/)')
         export_parser.add_argument('--session-id', '--session',
                                  help='Specify session ID (if not specified, export all)')
         export_parser.add_argument('--project', '-p',
@@ -270,8 +270,12 @@ Examples:
         project_name = chat.get('project', {}).get('name', 'unknown').replace(' ', '_')
         source = chat.get('source', 'unknown')
         
-        # Determine output path
-        output_base = args.output or pathlib.Path.cwd()
+        # Determine output path - default to .anyspecs directory
+        if args.output:
+            output_base = args.output
+        else:
+            output_base = pathlib.Path.cwd() / '.anyspecs'
+            output_base.mkdir(exist_ok=True)  # Create .anyspecs directory if it doesn't exist
         
         if output_base.is_dir() or not output_base.suffix:
             # Generate a filename
@@ -303,7 +307,10 @@ Examples:
     
     def _export_multiple_chats(self, chats: List[Dict[str, Any]], formatter, args) -> int:
         """Export multiple chats."""
-        output_base = args.output or pathlib.Path.cwd()
+        if args.output:
+            output_base = args.output
+        else:
+            output_base = pathlib.Path.cwd() / '.anyspecs'
         
         if not output_base.is_dir():
             output_base.mkdir(parents=True, exist_ok=True)

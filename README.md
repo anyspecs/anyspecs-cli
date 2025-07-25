@@ -7,8 +7,10 @@ AnySpecs CLI is a unified command-line tool for exporting chat history from mult
 - **Multi-Source Support**: Export from Cursor AI, Claude Code, and Kiro Records
 - **Multiple Export Formats**: Markdown, HTML, and JSON
 - **Project-Based Filtering**: Export sessions by project or current directory
-- **Session Management**: List, filter, and export specific chat sessions
-- **Upload Support**: Upload exported files to remote servers
+- **Flexible Session Management**: List, filter, and export specific sessions
+- **Server Upload**: Upload exported files to remote servers
+- **Default Export Directory**: All exports save to `.anyspecs/` by default for organized storage
+- **Cross-Platform**: Works on Windows, macOS, and Linux
 - **Organized Package Structure**: Clean, modular codebase with separate packages for different functionality
 
 ## Installation
@@ -57,10 +59,10 @@ anyspecs list --verbose
 ### Export Chat Sessions
 
 ```bash
-# Export current project's sessions to Markdown (default)
+# Export current project's sessions to Markdown (default to .anyspecs/)
 anyspecs export
 
-# Export all sessions to HTML
+# Export all sessions to HTML (default to .anyspecs/)
 anyspecs export --all-projects --format html
 
 # Export specific session
@@ -87,20 +89,20 @@ anyspecs export --format json --upload --server https://myserver.com --username 
 # List all available chat sessions
 anyspecs list
 
-# Export current project's chat history to Markdown
+# Export current project's chat history to Markdown (saves to .anyspecs/)
 anyspecs export
 
-# Export all projects to HTML format
+# Export all projects to HTML format (saves to .anyspecs/)
 anyspecs export --all-projects --format html
 ```
 
 ### Advanced Usage
 
 ```bash
-# Export specific project's sessions
+# Export specific project's sessions (saves to .anyspecs/)
 anyspecs export --project myproject --format json
 
-# Export last 10 sessions only
+# Export last 10 sessions only (saves to .anyspecs/)
 anyspecs export --limit 10 --format markdown
 
 # Export specific session to custom location
@@ -139,7 +141,7 @@ anyspecs export [OPTIONS]
 **Options:**
 - `--source, -s {cursor,claude,kiro,all}`: Source to export from (default: all)
 - `--format, -f {json,markdown,md,html}`: Export format (default: markdown)
-- `--output, -o PATH`: Output directory or file path
+- `--output, -o PATH`: Output directory or file path (default: .anyspecs/)
 - `--session-id, --session ID`: Export specific session ID
 - `--project, -p NAME`: Filter by project name
 - `--all-projects, -a`: Export all projects' sessions
