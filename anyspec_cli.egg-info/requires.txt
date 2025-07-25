@@ -1,0 +1,11 @@
+requests>=2.25.0
+python-dateutil>=2.8.0
+
+[dev]
+pytest>=6.0
+black>=21.0
+flake8>=3.8
+mypy>=0.800
+
+[rich]
+rich>=13.0.0
