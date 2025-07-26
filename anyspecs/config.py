@@ -31,6 +31,21 @@ class Config:
             },
             'server': {
                 'default_url': 'http://localhost:4999'
+            },
+            'ai': {
+                'default_model': 'gpt-4o-mini',
+                'default_base_url': 'https://aihubmix.com/v1',
+                'default_temperature': 0.3,
+                'default_max_tokens': 10000,
+                'timeout': 120,
+                'retry_attempts': 3,
+                'retry_delay': 1.0
+            },
+            'compress': {
+                'default_pattern': None,
+                'default_batch_size': 1,
+                'save_raw_response': True,
+                'validate_output': True
             }
         }
         
@@ -96,6 +111,37 @@ class Config:
                     target[key] = value
         
         merge_dict(self._config, self.defaults)
+    
+    def get_ai_config(self) -> Dict[str, Any]:
+        """Get AI-related configuration."""
+        return self.get('ai', {})
+    
+    def get_compress_config(self) -> Dict[str, Any]:
+        """Get compression-related configuration."""
+        return self.get('compress', {})
+    
+    def set_ai_api_key(self, api_key: str):
+        """Set AI API key."""
+        self.set('ai.api_key', api_key)
+    
+    def get_ai_api_key(self) -> Optional[str]:
+        """Get AI API key from config or environment."""
+        import os
+        return self.get('ai.api_key') or os.getenv('ANYSPECS_AI_API_KEY')
+    
+    def get_ai_base_url(self) -> str:
+        """Get AI API base URL."""
+        import os
+        return (self.get('ai.base_url') or 
+                os.getenv('ANYSPECS_AI_BASE_URL') or 
+                self.get('ai.default_base_url'))
+    
+    def get_ai_model(self) -> str:
+        """Get AI model."""
+        import os
+        return (self.get('ai.model') or 
+                os.getenv('ANYSPECS_AI_MODEL') or 
+                self.get('ai.default_model'))
 
 
 # Global configuration instance

@@ -51,6 +51,10 @@ class AnySpecsCLI:
                 return self._list_command(parsed_args)
             elif parsed_args.command == 'export':
                 return self._export_command(parsed_args)
+            elif parsed_args.command == 'compress':
+                return self._compress_command(parsed_args)
+            elif parsed_args.command == 'setup':
+                return self._setup_command(parsed_args)
             else:
                 parser.print_help()
                 return 1
@@ -71,14 +75,31 @@ class AnySpecsCLI:
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog="""
 Examples:
+  # Chat Export
   %(prog)s list                                    # List all chat sessions from all sources
   %(prog)s list --source cursor                   # List only Cursor sessions
-  %(prog)s list --source kiro                     # List only Kiro sessions
   %(prog)s export --format markdown               # Export current project's sessions to .anyspecs/
   %(prog)s export --source claude --format json   # Export Claude sessions to .anyspecs/
-  %(prog)s export --source kiro --format html     # Export Kiro records to .anyspecs/
   %(prog)s export --session-id abc123 --format html --output chat.html
   %(prog)s export --project myproject --format json --upload --server http://localhost:4999
+
+  # AI Configuration (First-time setup)
+  %(prog)s setup aihubmix                         # Configure Aihubmix API key and model
+  %(prog)s setup kimi                             # Configure Kimi API key and model  
+  %(prog)s setup minimax                          # Configure MiniMax API key, model and Group ID
+  %(prog)s setup ppio                             # Configure PPIO API key and model
+  %(prog)s setup --list                           # List all configured AI providers
+  %(prog)s setup --reset                          # Reset all AI configurations
+
+  # AI Compression (Auto-load from config)
+  %(prog)s compress                               # Use default configured provider for compression
+  %(prog)s compress --provider kimi               # Override with specific provider
+  %(prog)s compress --api-key YOUR_KEY --model gpt-4  # Override with command line options
+  %(prog)s compress --dry-run --verbose           # Preview files to be compressed
+  %(prog)s compress --input .anyspecs --output .compressed  # Specify input/output directories
+
+Note: After first-time setup, API keys and models are auto-saved to .env file and config.
+      Subsequent runs will automatically load these settings unless overridden.
             """
         )
         
@@ -126,6 +147,52 @@ Examples:
                                  help='Server URL for upload (default: http://localhost:4999)')
         export_parser.add_argument('--username', help='Username for server authentication')
         export_parser.add_argument('--password', help='Password for server authentication')
+        
+        # compress command  
+        compress_parser = subparsers.add_parser('compress', 
+                                               help='AI-compress chat sessions into .specs format (auto-loads config)')
+        compress_parser.add_argument('--input', '-i', 
+                                   type=pathlib.Path,
+                                   default=pathlib.Path('.anyspecs'),
+                                   help='Input directory to scan for chat files (default: .anyspecs/)')
+        compress_parser.add_argument('--output', '-o',
+                                   type=pathlib.Path,
+                                   help='Output directory for .specs files (default: same as input)')
+        compress_parser.add_argument('--provider', '-p',
+                                   choices=['aihubmix', 'kimi', 'minimax', 'ppio'],
+                                   help='AI provider to use (default: auto-loaded from .env/config)')
+        compress_parser.add_argument('--api-key', '--key',
+                                   help='AI API key (overrides .env/config, or use ANYSPECS_AI_API_KEY env var)')
+        compress_parser.add_argument('--model', '-m',
+                                   help='AI model to use (overrides .env/config settings)')
+        compress_parser.add_argument('--temperature', '-t',
+                                   type=float,
+                                   default=0.3,
+                                   help='AI temperature (default: 0.3)')
+        compress_parser.add_argument('--max-tokens',
+                                   type=int,
+                                   default=10000,
+                                   help='Maximum tokens (default: 10000)')
+        compress_parser.add_argument('--pattern', '--filter',
+                                   help='File pattern to match (e.g., "*.md", "*cursor*")')
+        compress_parser.add_argument('--batch-size', '--batch',
+                                   type=int,
+                                   default=1,
+                                   help='Number of files to process in parallel (default: 1)')
+        compress_parser.add_argument('--dry-run', action='store_true',
+                                   help='Show what would be compressed without actually doing it')
+        compress_parser.add_argument('--verbose', '-v', action='store_true', help='Display detailed information')
+        
+        # setup command
+        setup_parser = subparsers.add_parser('setup', help='Setup and manage AI provider configurations')
+        setup_parser.add_argument('provider',
+                                choices=['aihubmix', 'kimi', 'minimax', 'ppio'],
+                                nargs='?',
+                                help='AI provider to setup (saves to .env and config files)')
+        setup_parser.add_argument('--reset', action='store_true',
+                                help='Reset all AI configurations (clears .env and config)')
+        setup_parser.add_argument('--list', action='store_true',
+                                help='List all configured providers with their settings')
         
         return parser
     
@@ -390,6 +457,212 @@ Examples:
             return 0 if success else 1
         except Exception as e:
             print(f"❌ Error creating zip file: {e}")
+            return 1
+    
+    def _compress_command(self, args) -> int:
+        """Execute the compress command."""
+        print("🤖 AI chat compression starting...")
+        
+        # Import required modules
+        try:
+            from .core.ai_processor import AIProcessor
+            from .config.ai_config import ai_config
+        except ImportError:
+            print("❌ Required modules not found. Please ensure all dependencies are installed.")
+            return 1
+        
+        # Validate input directory
+        input_dir = args.input
+        if not input_dir.exists():
+            print(f"❌ Input directory does not exist: {input_dir}")
+            return 1
+        
+        # Set output directory (default to same as input)
+        output_dir = args.output or input_dir
+        if not output_dir.exists():
+            output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Determine provider to use
+        provider = args.provider
+        
+        # If no provider specified via args, try to get from config
+        if not provider:
+            provider = ai_config.get_default_provider()
+            if not provider:
+                print("❌ No AI provider specified and no default provider configured.")
+                print("💡 Let's set up your first AI provider...")
+                # Use aihubmix as default for first setup
+                provider = 'aihubmix'
+        
+        # Check if provider is configured, if not run interactive setup
+        if not ai_config.is_configured(provider):
+            print(f"🔧 {provider.upper()} is not configured yet.")
+            print("Let's set it up...")
+            
+            success = ai_config.setup_interactive(provider)
+            if not success:
+                print("❌ Configuration failed. Cannot proceed with compression.")
+                return 1
+            
+            print()  # Add spacing after setup
+        
+        # Get provider configuration (already includes .env file priority)
+        provider_config = ai_config.get_provider_config(provider)
+        
+        # Override with command line arguments if provided (highest priority)
+        api_key = args.api_key or provider_config.get('api_key')
+        model = args.model or provider_config.get('model')
+        temperature = getattr(args, 'temperature', None)
+        if temperature is None:
+            temperature = provider_config.get('temperature', 0.3)
+        max_tokens = getattr(args, 'max_tokens', None)
+        if max_tokens is None:
+            max_tokens = provider_config.get('max_tokens', 10000)
+        
+        # Final validation
+        if not api_key:
+            print("❌ No API key found. Please configure the provider or provide --api-key.")
+            return 1
+        
+        if not model:
+            print("❌ No model specified. Please configure the provider or provide --model.")
+            return 1
+        
+        # Show configuration being used
+        print(f"🔧 Using provider: {provider}")
+        print(f"🤖 Using model: {model}")
+        if args.verbose:
+            print(f"🌡️  Temperature: {temperature}")
+            print(f"🔢 Max tokens: {max_tokens}")
+            print(f"📁 Input directory: {input_dir}")
+            print(f"📁 Output directory: {output_dir}")
+        
+        try:
+            # Initialize AI processor
+            # Prepare additional config parameters
+            extra_config = {}
+            
+            # Add MiniMax specific parameters
+            if provider == 'minimax':
+                group_id = provider_config.get('group_id')
+                if group_id:
+                    extra_config['group_id'] = group_id
+                    if args.verbose:
+                        print(f"🏷️  Group ID: {group_id}")
+                else:
+                    print("⚠️  Warning: MiniMax group_id not configured. Please run 'anyspecs setup minimax' to configure it.")
+            
+            processor = AIProcessor(
+                provider=provider,
+                api_key=api_key,
+                model=model,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                **extra_config
+            )
+            
+            # Process files
+            success = processor.compress_directory(
+                input_dir=input_dir,
+                output_dir=output_dir,
+                pattern=args.pattern,
+                batch_size=args.batch_size,
+                dry_run=args.dry_run,
+                verbose=args.verbose
+            )
+            
+            return 0 if success else 1
+            
+        except Exception as e:
+            print(f"❌ Compression failed: {e}")
+            if args.verbose:
+                import traceback
+                traceback.print_exc()
+            return 1
+    
+    def _setup_command(self, args) -> int:
+        """Execute the setup command."""
+        
+        try:
+            from .config.ai_config import ai_config
+        except ImportError:
+            print("❌ AI config module not found. Please ensure all dependencies are installed.")
+            return 1
+        
+        # Handle list option
+        if args.list:
+            return self._list_ai_providers()
+        
+        # Handle reset option
+        if args.reset:
+            return self._reset_ai_config()
+        
+        # Check if provider is specified
+        if not args.provider:
+            print("❌ Provider is required when not using --list or --reset")
+            print("💡 Available providers: aihubmix, kimi, minimax, ppio")
+            print("💡 Use 'anyspecs setup --list' to see configured providers")
+            return 1
+        
+        # Setup specific provider
+        provider = args.provider
+        print(f"🔧 Setting up {provider.upper()} AI provider...")
+        
+        success = ai_config.setup_interactive(provider)
+        return 0 if success else 1
+    
+    def _list_ai_providers(self) -> int:
+        """List all configured AI providers."""
+        
+        try:
+            from .config.ai_config import ai_config
+        except ImportError:
+            print("❌ AI config module not found.")
+            return 1
+        
+        configured_providers = ai_config.list_configured_providers()
+        
+        if not configured_providers:
+            print("❌ No AI providers configured yet.")
+            print("💡 Use 'anyspecs setup <provider>' to configure a provider.")
+            return 1
+        
+        print("🤖 Configured AI Providers:")
+        print("=" * 40)
+        
+        for provider_info in configured_providers:
+            status = "✅ (default)" if provider_info['is_default'] else "✅"
+            print(f"{status} {provider_info['provider'].upper()}")
+            print(f"   Model: {provider_info['model']}")
+            print()
+        
+        return 0
+    
+    def _reset_ai_config(self) -> int:
+        """Reset AI configuration."""
+        
+        try:
+            from .config.ai_config import ai_config
+        except ImportError:
+            print("❌ AI config module not found.")
+            return 1
+        
+        try:
+            confirm = input("⚠️  This will reset all AI configurations. Continue? (y/N): ").strip().lower()
+            if confirm not in ('y', 'yes'):
+                print("❌ Reset cancelled.")
+                return 1
+            
+            success = ai_config.reset_config()
+            if success:
+                print("✅ AI configuration reset successfully.")
+                return 0
+            else:
+                print("❌ Failed to reset AI configuration.")
+                return 1
+                
+        except KeyboardInterrupt:
+            print("\n❌ Reset cancelled by user.")
             return 1
 
 
