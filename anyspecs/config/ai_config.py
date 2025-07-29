@@ -5,12 +5,57 @@ Handles saving and loading AI provider settings.
 
 import os
 import json
+import sys
+import getpass
 from pathlib import Path
 from typing import Dict, Any, Optional
 
 from ..utils.logging import get_logger
 
 logger = get_logger('ai_config')
+
+
+def masked_input(prompt: str) -> str:
+    """Input function that shows asterisks for each character typed."""
+    try:
+        import termios
+        import tty
+        
+        print(prompt, end='', flush=True)
+        password = ""
+        
+        while True:
+            # Read one character at a time
+            fd = sys.stdin.fileno()
+            old_settings = termios.tcgetattr(fd)
+            try:
+                tty.setraw(fd)
+                char = sys.stdin.read(1)
+            finally:
+                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+            
+            # Handle different key presses
+            if char == '\r' or char == '\n':  # Enter key
+                print()  # New line
+                break
+            elif char == '\x7f' or char == '\x08':  # Backspace
+                if password:
+                    password = password[:-1]
+                    # Clear the line and reprint
+                    print('\r' + ' ' * (len(prompt) + len(password) + 1), end='')
+                    print('\r' + prompt + '*' * len(password), end='', flush=True)
+            elif char == '\x03':  # Ctrl+C
+                print()
+                raise KeyboardInterrupt
+            elif ord(char) >= 32:  # Printable characters
+                password += char
+                print('*', end='', flush=True)
+        
+        return password
+        
+    except (ImportError, AttributeError):
+        # Fallback to getpass on systems without termios (like Windows)
+        return getpass.getpass(prompt)
 
 
 class AIConfigManager:
@@ -205,8 +250,8 @@ class AIConfigManager:
         print("=" * 50)
         
         try:
-            # Get API key
-            api_key = input(f"Enter your {provider.upper()} API key: ").strip()
+            # Get API key (masked input for security)
+            api_key = masked_input(f"Enter your {provider.upper()} API key: ").strip()
             if not api_key:
                 print("❌ API key is required")
                 return False
@@ -223,7 +268,7 @@ class AIConfigManager:
             extra_config = {}
             if provider == 'minimax':
                 print("\n📝 MiniMax requires a Group ID for API access")
-                group_id = input("Enter your MiniMax Group ID: ").strip()
+                group_id = masked_input("Enter your MiniMax Group ID: ").strip()
                 if not group_id:
                     print("❌ Group ID is required for MiniMax API")
                     return False
