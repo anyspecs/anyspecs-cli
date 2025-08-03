@@ -14,6 +14,7 @@ from .utils.upload import upload_file_to_server
 from .exporters.cursor import CursorExtractor
 from .exporters.claude import ClaudeExtractor
 from .exporters.kiro import KiroExtractor
+from .exporters.augment import AugmentExtractor
 from .core.formatters import JSONFormatter, MarkdownFormatter, HTMLFormatter
 
 
@@ -24,7 +25,8 @@ class AnySpecsCLI:
         self.extractors = {
             'cursor': CursorExtractor(),
             'claude': ClaudeExtractor(),
-            'kiro': KiroExtractor()
+            'kiro': KiroExtractor(),
+            'augment': AugmentExtractor()
         }
         self.formatters = {
             'json': JSONFormatter(),
@@ -78,8 +80,10 @@ Examples:
   # Chat Export
   %(prog)s list                                    # List all chat sessions from all sources
   %(prog)s list --source cursor                   # List only Cursor sessions
+  %(prog)s list --source augment                  # List only Augment sessions
   %(prog)s export --format markdown               # Export current project's sessions to .anyspecs/
   %(prog)s export --source claude --format json   # Export Claude sessions to .anyspecs/
+  %(prog)s export --source augment --format json  # Export Augment sessions to .anyspecs/
   %(prog)s export --session-id abc123 --format html --output chat.html
   %(prog)s export --project myproject --format json --upload --server http://localhost:4999
 
@@ -111,7 +115,7 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
         # list command
         list_parser = subparsers.add_parser('list', help='List all chat sessions')
         list_parser.add_argument('--source', '-s', 
-                               choices=['cursor', 'claude', 'kiro', 'all'], 
+                               choices=['cursor', 'claude', 'kiro', 'augment', 'all'], 
                                default='all',
                                help='Source to list sessions from (default: all)')
         list_parser.add_argument('--verbose', '-v', action='store_true', help='Display detailed information')
@@ -119,7 +123,7 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
         # export command
         export_parser = subparsers.add_parser('export', help='Export chat sessions')
         export_parser.add_argument('--source', '-s',
-                                 choices=['cursor', 'claude', 'kiro', 'all'],
+                                 choices=['cursor', 'claude', 'kiro', 'augment', 'all'],
                                  default='all',
                                  help='Source to export from (default: all)')
         export_parser.add_argument('--format', '-f', 
@@ -202,7 +206,7 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
         
         # Collect sessions from all requested sources
         all_sessions = []
-        sources_to_check = ['cursor', 'claude', 'kiro'] if args.source == 'all' else [args.source]
+        sources_to_check = ['cursor', 'claude', 'kiro', 'augment'] if args.source == 'all' else [args.source]
         
         for source in sources_to_check:
             extractor = self.extractors[source]
@@ -217,7 +221,7 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
         
         if not all_sessions:
             print("❌ No chat records found")
-            print("💡 Please ensure Cursor and/or Claude Code are installed and you have used the AI assistants")
+            print("💡 Please ensure corresponding IDE is installed and you have used the AI assistants")
             return 1
         
         print(f"✅ Found {len(all_sessions)} chat sessions\n")
@@ -255,7 +259,7 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
         
         # Collect chats from all requested sources
         all_chats = []
-        sources_to_check = ['cursor', 'claude', 'kiro'] if args.source == 'all' else [args.source]
+        sources_to_check = ['cursor', 'claude', 'kiro', 'augment'] if args.source == 'all' else [args.source]
         
         for source in sources_to_check:
             extractor = self.extractors[source]
