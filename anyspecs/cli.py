@@ -16,6 +16,7 @@ from .exporters.claude import ClaudeExtractor
 from .exporters.kiro import KiroExtractor
 from .exporters.augment import AugmentExtractor
 from .core.formatters import JSONFormatter, MarkdownFormatter, HTMLFormatter
+from . import __version__
 
 
 class AnySpecsCLI:
@@ -73,7 +74,7 @@ class AnySpecsCLI:
     def _create_parser(self) -> argparse.ArgumentParser:
         """Create the argument parser."""
         parser = argparse.ArgumentParser(
-            description='AnySpecs CLI - Universal Chat History Export Tool',
+            description='AnySpecs CLI - Code is Cheap, Show me Any Specs',
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog="""
 Examples:
@@ -110,6 +111,7 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
         subparsers = parser.add_subparsers(dest='command', help='Available commands')
         
         # Global options
+        parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
         parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose logging')
         
         # list command

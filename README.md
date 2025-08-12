@@ -17,13 +17,13 @@ AnySpecs CLI is a unified command-line tool for exporting chat history from mult
 
 ## Features
 
-- **Multi-Source Support**: Export from Cursor AI, Claude Code, and Kiro Records(More to come)
+- **Multi-Source Support**: Export from Cursor AI, Claude Code, Augment Code, and Kiro Records(More to come)
 - **Multiple Export Formats**: Markdown, HTML, and JSON
 - **Project-Based and Workspace Filtering**: Export sessions by project or current directory
 - **Flexible Session Management**: List, filter, and export specific sessions
 - **Default Export Directory**: All exports save to `.anyspecs/` by default for organized storage
+- **AI Summary**: Summarize chat history into a single file
 - **Terminal history and files diff history**: Export terminal history and files diff history(WIP)
-- **AI Summary**: Summarize chat history into a single file (WIP)
 - **Server Upload and Share**: Upload exported files to remote servers (WIP)
 
 ## Installation
@@ -57,7 +57,7 @@ pip install anyspecs
 anyspecs list
 
 # List only Cursor/Claude/Kiro sessions in this workspace
-anyspecs list --source cursor/claude/kiro
+anyspecs list --source cursor/claude/kiro/augment/all
 
 # Show detailed information
 anyspecs list --verbose
@@ -88,6 +88,23 @@ anyspecs export --output ./exports --format html
 anyspecs export --format json --upload --server https://myserver.com --username user --password pass
 ```
 
+### More Functions
+
+```shell
+anyspecs --help
+# positional arguments:
+#   {list,export,compress,setup}
+#                         Available commands
+#     list                List all chat sessions
+#     export              Export chat sessions
+#     compress            AI-compress chat sessions into .specs format (auto-loads config)
+#     setup               Setup and manage AI provider configurations
+
+# options:
+#   -h, --help            show this help message and exit
+#   --verbose, -v         Enable verbose logging
+```
+
 ## Supported Sources
 
 ### Cursor AI
@@ -106,35 +123,19 @@ Extracts chat history from Claude Code's JSONL history files, including:
 - Session metadata
 - Project context
 
+### Augment Code
+
+Extracts chat history from VSCode's history files, including:
+- User messages and AI responses
+- Tool calls and results
+- Session metadata
+- Project context
+
 ### Kiro Records
 
 Extracts and combines markdown documents from `.kiro` directory, including:
 - File metadata (name, modification time)
 - Automatic project summary detection
-
-## Package Structure
-
-```
-anyspecs-cli/
-├── anyspecs/
-│   ├── __init__.py          # Main package
-│   ├── cli.py               # CLI interface
-│   ├── config.py           # Configuration management
-│   ├── core/               # Core functionality
-│   │   ├── extractors.py   # Base extractor classes
-│   │   └── formatters.py   # Export formatters
-│   ├── exporters/          # Source-specific extractors
-│   │   ├── cursor.py       # Cursor AI extractor
-│   │   └── claude.py       # Claude Code extractor
-│   │   └── kiro.py         # Kiro Records extractor
-│   └── utils/              # Utility modules
-│       ├── logging.py      # Logging configuration
-│       ├── paths.py        # Path utilities
-│       └── upload.py       # Upload functionality
-├── setup.py               # Package setup
-├── requirements.txt       # Dependencies
-└── README.md             # This file
-```
 
 ## Contributing
 
@@ -155,9 +156,6 @@ pytest
 
 # Format code
 black anyspecs/
-
-# Type checking
-mypy anyspecs/
 ```
 
 ## License
@@ -165,6 +163,13 @@ mypy anyspecs/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.0.4
+- Add Augment Code support
+- Add version option
+
+### v0.0.3
+- Add AI Summary support(PPIO, Minimax, Kimi)
 
 ### v0.0.2
 - Kiro Records support: Extract and export files from .kiro directory
