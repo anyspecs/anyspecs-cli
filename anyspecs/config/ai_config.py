@@ -102,6 +102,10 @@ class AIConfigManager:
                     'base_url': 'https://api.ppinfra.com/v3/openai',
                     'temperature': 0.3,
                     'max_tokens': 512
+                },
+                'dify': {
+                    'api_key': None,
+                    'base_url': 'https://api.dify.ai/v1'
                 }
             },
             'compress_settings': {
@@ -256,16 +260,25 @@ class AIConfigManager:
                 print("❌ API key is required")
                 return False
             
-            # Get model (optional, will use default if not provided)
+            # Provider-specific extra settings
             current_config = self.get_provider_config(provider)
-            default_model = current_config.get('model', self.default_config['providers'][provider]['model'])
+            extra_config = {}
             
-            model = input(f"Enter model name (default: {default_model}): ").strip()
-            if not model:
-                model = default_model
+            # For Dify, prompt BASE_URL instead of model
+            if provider == 'dify':
+                default_base = current_config.get('base_url', self.default_config['providers']['dify']['base_url'])
+                base_url = input(f"Enter BASE_URL for Dify (default: {default_base}): ").strip() or default_base
+                extra_config['base_url'] = base_url
+                model = ""  # not required
+            else:
+                # Get model (optional, use default if present)
+                default_model = current_config.get('model', self.default_config['providers'].get(provider, {}).get('model'))
+                model = ""
+                if default_model is not None:
+                    model_in = input(f"Enter model name (default: {default_model}): ").strip()
+                    model = model_in or default_model
             
             # MiniMax specific configuration
-            extra_config = {}
             if provider == 'minimax':
                 print("\n📝 MiniMax requires a Group ID for API access")
                 group_id = masked_input("Enter your MiniMax Group ID: ").strip()
@@ -275,16 +288,17 @@ class AIConfigManager:
                 extra_config['group_id'] = group_id
             
             # Save configuration
-            success = self.set_provider_config(
-                provider,
-                api_key=api_key,
-                model=model,
-                **extra_config
-            )
+            settings = {"api_key": api_key}
+            if model:
+                settings["model"] = model
+            success = self.set_provider_config(provider, **settings, **extra_config)
             
             if success:
                 print(f"✅ {provider.upper()} configuration saved successfully!")
-                print(f"   Model: {model}")
+                if provider == 'dify':
+                    print(f"   BASE_URL: {extra_config.get('base_url')}")
+                else:
+                    print(f"   Model: {model}")
                 if provider == 'minimax' and extra_config.get('group_id'):
                     print(f"   Group ID: {extra_config['group_id']}")
                 print(f"   Config saved to: {self.config_file}")
