@@ -6,17 +6,19 @@ import argparse
 import sys
 import pathlib
 import datetime
+import os
 from typing import Dict, Any, List, Optional
 
 from .utils.logging import setup_logging
 from .utils.paths import get_project_name
-from .utils.upload import upload_file_to_server
 from .exporters.cursor import CursorExtractor
 from .exporters.claude import ClaudeExtractor
 from .exporters.kiro import KiroExtractor
 from .exporters.augment import AugmentExtractor
+from .exporters.codex import CodexExtractor
 from .core.formatters import JSONFormatter, MarkdownFormatter, HTMLFormatter
 from . import __version__
+from .utils.uploader import AnySpecsUploadClient
 
 
 class AnySpecsCLI:
@@ -27,7 +29,8 @@ class AnySpecsCLI:
             'cursor': CursorExtractor(),
             'claude': ClaudeExtractor(),
             'kiro': KiroExtractor(),
-            'augment': AugmentExtractor()
+            'augment': AugmentExtractor(),
+            'codex': CodexExtractor()
         }
         self.formatters = {
             'json': JSONFormatter(),
@@ -58,6 +61,8 @@ class AnySpecsCLI:
                 return self._compress_command(parsed_args)
             elif parsed_args.command == 'setup':
                 return self._setup_command(parsed_args)
+            elif parsed_args.command == 'upload':
+                return self._upload_command(parsed_args)
             else:
                 parser.print_help()
                 return 1
@@ -78,29 +83,17 @@ class AnySpecsCLI:
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog="""
 Examples:
-  # Chat Export
   %(prog)s list                                    # List all chat sessions from all sources
-  %(prog)s list --source cursor                   # List only Cursor sessions
-  %(prog)s list --source augment                  # List only Augment sessions
-  %(prog)s export --format markdown               # Export current project's sessions to .anyspecs/
-  %(prog)s export --source claude --format json   # Export Claude sessions to .anyspecs/
-  %(prog)s export --source augment --format json  # Export Augment sessions to .anyspecs/
-  %(prog)s export --session-id abc123 --format html --output chat.html
-  %(prog)s export --project myproject --format json --upload --server http://localhost:4999
-
-  # AI Configuration (First-time setup)
-  %(prog)s setup aihubmix                         # Configure Aihubmix API key and model
+  %(prog)s list --source cursor                   # List only Cursor sessions(Also works for augment, claude code, kiro and codex)
+  %(prog)s export --source claude --format json   # Export Claude sessions as json to .anyspecs/ Default is markdown
+  %(prog)s export --session-id abc123 --format html --output chat.html # Export a specific session as html to chat.html
   %(prog)s setup kimi                             # Configure Kimi API key and model  
-  %(prog)s setup minimax                          # Configure MiniMax API key, model and Group ID
   %(prog)s setup ppio                             # Configure PPIO API key and model
   %(prog)s setup --list                           # List all configured AI providers
   %(prog)s setup --reset                          # Reset all AI configurations
-
-  # AI Compression (Auto-load from config)
   %(prog)s compress                               # Use default configured provider for compression
   %(prog)s compress --provider kimi               # Override with specific provider
   %(prog)s compress --api-key YOUR_KEY --model gpt-4  # Override with command line options
-  %(prog)s compress --dry-run --verbose           # Preview files to be compressed
   %(prog)s compress --input .anyspecs --output .compressed  # Specify input/output directories
 
 Note: After first-time setup, API keys and models are auto-saved to .env file and config.
@@ -117,7 +110,7 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
         # list command
         list_parser = subparsers.add_parser('list', help='List all chat sessions')
         list_parser.add_argument('--source', '-s', 
-                               choices=['cursor', 'claude', 'kiro', 'augment', 'all'], 
+                               choices=['cursor', 'claude', 'kiro', 'augment', 'codex', 'all'], 
                                default='all',
                                help='Source to list sessions from (default: all)')
         list_parser.add_argument('--verbose', '-v', action='store_true', help='Display detailed information')
@@ -125,7 +118,7 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
         # export command
         export_parser = subparsers.add_parser('export', help='Export chat sessions')
         export_parser.add_argument('--source', '-s',
-                                 choices=['cursor', 'claude', 'kiro', 'augment', 'all'],
+                                 choices=['cursor', 'claude', 'kiro', 'augment', 'codex', 'all'],
                                  default='all',
                                  help='Source to export from (default: all)')
         export_parser.add_argument('--format', '-f', 
@@ -146,13 +139,7 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
                                  help='Limit export count')
         export_parser.add_argument('--verbose', '-v', action='store_true', help='Display detailed information')
         
-        # Upload options
-        export_parser.add_argument('--upload', action='store_true',
-                                 help='Upload exported file to server')
-        export_parser.add_argument('--server', default="http://localhost:4999",
-                                 help='Server URL for upload (default: http://localhost:4999)')
-        export_parser.add_argument('--username', help='Username for server authentication')
-        export_parser.add_argument('--password', help='Password for server authentication')
+
         
         # compress command  
         compress_parser = subparsers.add_parser('compress', 
@@ -185,10 +172,20 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
                                    type=int,
                                    default=1,
                                    help='Number of files to process in parallel (default: 1)')
-        compress_parser.add_argument('--dry-run', action='store_true',
-                                   help='Show what would be compressed without actually doing it')
         compress_parser.add_argument('--verbose', '-v', action='store_true', help='Display detailed information')
         
+        # upload command
+        upload_parser = subparsers.add_parser('upload', help='Upload files to AnySpecs hub service')
+        upload_parser.add_argument('--url', default='https://hub.anyspecs.cn/',
+                                   help='API base URL (default: https://hub.anyspecs.cn/)')
+        upload_parser.add_argument('--file', help='File path to upload')
+        upload_parser.add_argument('--description', default='', help='File description')
+        upload_parser.add_argument('--list', action='store_true', help='List files')
+        upload_parser.add_argument('--search', help='Search file keyword')
+        upload_parser.add_argument('--page', type=int, default=0, help='Page number (starting from 0)')
+        upload_parser.add_argument('--http', action='store_true', help='Force use HTTP instead of HTTPS for testing')
+        upload_parser.add_argument('--verbose', '-v', action='store_true', help='Display detailed information')
+
         # setup command
         setup_parser = subparsers.add_parser('setup', help='Setup and manage AI provider configurations')
         setup_parser.add_argument('provider',
@@ -208,7 +205,7 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
         
         # Collect sessions from all requested sources
         all_sessions = []
-        sources_to_check = ['cursor', 'claude', 'kiro', 'augment'] if args.source == 'all' else [args.source]
+        sources_to_check = ['cursor', 'claude', 'kiro', 'augment', 'codex'] if args.source == 'all' else [args.source]
         
         for source in sources_to_check:
             extractor = self.extractors[source]
@@ -261,7 +258,7 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
         
         # Collect chats from all requested sources
         all_chats = []
-        sources_to_check = ['cursor', 'claude', 'kiro', 'augment'] if args.source == 'all' else [args.source]
+        sources_to_check = ['cursor', 'claude', 'kiro', 'augment', 'codex'] if args.source == 'all' else [args.source]
         
         for source in sources_to_check:
             extractor = self.extractors[source]
@@ -369,10 +366,6 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
             print(f"✅ Export successful: {output_path}")
             print(f"📄 File size: {output_path.stat().st_size} bytes")
             
-            # Upload if requested
-            if args.upload:
-                return self._upload_file(output_path, args)
-            
             return 0
         except Exception as e:
             print(f"❌ Export failed: {e}")
@@ -426,45 +419,39 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
         
         print(f"\n🎉 Batch export completed! {success_count}/{len(chats)} files exported to: {output_base}")
         
-        # Upload if requested (upload the directory as a zip)
-        if args.upload and success_count > 0:
-            return self._upload_directory(output_base, args)
-        
         return 0 if success_count > 0 else 1
     
-    def _upload_file(self, file_path: pathlib.Path, args) -> int:
-        """Upload a single file."""
-        if not args.username or not args.password:
-            print("❌ Error: --username and --password required for upload")
+
+    def _upload_command(self, args) -> int:
+        """Execute the upload command (token read from ANYSPECS_TOKEN)."""
+        token = os.environ.get('ANYSPECS_TOKEN')
+        client = AnySpecsUploadClient(args.url, token, args.http)
+
+        if not token:
+            print("⚠️  No ANYSPECS_TOKEN environment variable found")
+            print("💡  Please set: export ANYSPECS_TOKEN=YOUR_TOKEN")
+            print("💡  Or use interactive mode to enter token manually")
+            # Fall back to interactive mode
+            client.interactive_mode()
+            return 0
+
+        # Validate token first
+        if not client.validate_token():
             return 1
-        
-        success = upload_file_to_server(file_path, args.server, args.username, args.password)
-        return 0 if success else 1
-    
-    def _upload_directory(self, directory_path: pathlib.Path, args) -> int:
-        """Upload a directory as a zip file."""
-        import shutil
-        
-        if not args.username or not args.password:
-            print("❌ Error: --username and --password required for upload")
-            return 1
-        
-        # Create a zip file
-        zip_path = directory_path.with_suffix('.zip')
-        try:
-            shutil.make_archive(str(directory_path), 'zip', directory_path)
-            print(f"📦 Created zip file: {zip_path}")
-            
-            success = upload_file_to_server(zip_path, args.server, args.username, args.password)
-            
-            # Clean up zip file
-            zip_path.unlink()
-            
-            return 0 if success else 1
-        except Exception as e:
-            print(f"❌ Error creating zip file: {e}")
-            return 1
-    
+
+        # Dispatch operations
+        if args.file:
+            return 0 if client.upload_file(str(args.file), args.description) else 1
+        if args.list:
+            return 0 if client.list_files(args.page) else 1
+        if args.search:
+            return 0 if client.list_files(args.page, args.search) else 1
+
+        # If no specific op, just test connection and show help summary
+        client.test_connection()
+        print("Use one of: --file, --list, --search")
+        return 0
+
     def _compress_command(self, args) -> int:
         """Execute the compress command."""
         print("🤖 AI chat compression starting...")
@@ -573,7 +560,6 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
                 output_dir=output_dir,
                 pattern=args.pattern,
                 batch_size=args.batch_size,
-                dry_run=args.dry_run,
                 verbose=args.verbose
             )
             
