@@ -7,13 +7,15 @@ from .aihubmix_client import AihubmixClient
 from .kimi_client import KimiClient
 from .minimax_client import MinimaxClient
 from .ppio_client import PPIOClient
+from .dify_client import DifyClient
 
 __all__ = [
     'BaseAIClient',
     'AihubmixClient', 
     'KimiClient',
     'MinimaxClient',
-    'PPIOClient'
+    'PPIOClient',
+    'DifyClient'
 ]
 
 # Available AI providers
@@ -21,7 +23,8 @@ AVAILABLE_PROVIDERS = {
     'aihubmix': AihubmixClient,
     'kimi': KimiClient,
     'minimax': MinimaxClient,
-    'ppio': PPIOClient
+    'ppio': PPIOClient,
+    'dify': DifyClient
 }
 
 def create_ai_client(provider: str, api_key: str, model: str, **kwargs) -> BaseAIClient:

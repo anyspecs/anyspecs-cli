@@ -152,7 +152,7 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
                                    type=pathlib.Path,
                                    help='Output directory for .specs files (default: same as input)')
         compress_parser.add_argument('--provider', '-p',
-                                   choices=['aihubmix', 'kimi', 'minimax', 'ppio'],
+                                   choices=['aihubmix', 'kimi', 'minimax', 'ppio', 'dify'],
                                    help='AI provider to use (default: auto-loaded from .env/config)')
         compress_parser.add_argument('--api-key', '--key',
                                    help='AI API key (overrides .env/config, or use ANYSPECS_AI_API_KEY env var)')
@@ -189,7 +189,7 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
         # setup command
         setup_parser = subparsers.add_parser('setup', help='Setup and manage AI provider configurations')
         setup_parser.add_argument('provider',
-                                choices=['aihubmix', 'kimi', 'minimax', 'ppio'],
+                                choices=['aihubmix', 'kimi', 'minimax', 'ppio', 'dify'],
                                 nargs='?',
                                 help='AI provider to setup (saves to .env and config files)')
         setup_parser.add_argument('--reset', action='store_true',
@@ -505,6 +505,8 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
         # Override with command line arguments if provided (highest priority)
         api_key = args.api_key or provider_config.get('api_key')
         model = args.model or provider_config.get('model')
+        # Provider-specific base URL for dify
+        base_url = provider_config.get('base_url')
         temperature = getattr(args, 'temperature', None)
         if temperature is None:
             temperature = provider_config.get('temperature', 0.3)
@@ -548,9 +550,10 @@ Note: After first-time setup, API keys and models are auto-saved to .env file an
             processor = AIProcessor(
                 provider=provider,
                 api_key=api_key,
-                model=model,
+                model=model or "",
                 temperature=temperature,
                 max_tokens=max_tokens,
+                base_url=base_url if provider == 'dify' else None,
                 **extra_config
             )
             
