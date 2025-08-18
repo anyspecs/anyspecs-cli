@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "anyspecs"
-version = "0.0.4"
+version = "0.0.5"
 description = "Specs Export Tool for AI Assistants"
 readme = "README.md"
 license = { file="LICENSE" }
@@ -32,6 +32,7 @@ requires-python = ">=3.8"
 dependencies = [
     "requests>=2.25.0",
     "python-dateutil>=2.8.0",
+    "pathlib2>=2.3.0",
 ]
 
 [project.optional-dependencies]

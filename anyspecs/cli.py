@@ -95,6 +95,10 @@ Examples:
   %(prog)s compress --provider kimi               # Override with specific provider
   %(prog)s compress --api-key YOUR_KEY --model gpt-4  # Override with command line options
   %(prog)s compress --input .anyspecs --output .compressed  # Specify input/output directories
+  # Upload (token from env: export ANYSPECS_TOKEN=YOUR_TOKEN)
+  %(prog)s upload --list                             # List files on hub
+  %(prog)s upload --file path/to/file [--description "desc"] # Upload to anyspecs hub.
+  %(prog)s upload --url http://your-server:3000 --file path/to/file # Specify your server
 
 Note: After first-time setup, API keys and models are auto-saved to .env file and config.
       Subsequent runs will automatically load these settings unless overridden.

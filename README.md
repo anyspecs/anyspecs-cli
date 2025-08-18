@@ -17,14 +17,14 @@ AnySpecs CLI is a unified command-line tool for exporting chat history from mult
 
 ## Features
 
-- **Multi-Source Support**: Export from Cursor AI, Claude Code, Augment Code, and Kiro Records(More to come)
+- **Multi-Source Support**: Export from Cursor AI, Claude Code, Augment Code, Codex cli and Kiro Records(More to come)
 - **Multiple Export Formats**: Markdown, HTML, and JSON
 - **Project-Based and Workspace Filtering**: Export sessions by project or current directory
 - **Flexible Session Management**: List, filter, and export specific sessions
 - **Default Export Directory**: All exports save to `.anyspecs/` by default for organized storage
 - **AI Summary**: Summarize chat history into a single file
+- **Server Upload and Share**: Upload exported files to remote servers
 - **Terminal history and files diff history**: Export terminal history and files diff history(WIP)
-- **Server Upload and Share**: Upload exported files to remote servers (WIP)
 
 ## Installation
 
@@ -57,10 +57,7 @@ pip install anyspecs
 anyspecs list
 
 # List only Cursor/Claude/Kiro sessions in this workspace
-anyspecs list --source cursor/claude/kiro/augment/all
-
-# Show detailed information
-anyspecs list --verbose
+anyspecs list --source cursor/claude/kiro/augment/codex/all
 ```
 
 ### Export Chat Sessions
@@ -73,19 +70,45 @@ anyspecs export
 anyspecs export --all-projects --format html
 
 # Export specific session
-anyspecs export --session-id abc123 --format json
+anyspecs export [--session-id abc123] [--format json]
 
-# Export Claude sessions only
-anyspecs export --source claude --format markdown
+# Export specific source sessions only(default is markdown) with custom output path
+anyspecs export [--source claude/cursor/kiro/augment/codex] [--format markdown] [--output ./exports]
+```
 
-# Export Kiro records only
-anyspecs export --source kiro --format html
+### Setup config
 
-# Export with custom output path
-anyspecs export --output ./exports --format html
+```bash
+# Setup specific AI provider
+anyspecs setup [aihubmix/kimi/minimax/ppio/dify]
+# list all the providers
+anyspecs setup --list
+# reset all the providers
+anyspecs setup --reset
+```
 
-# Export and upload to server(WIP)
-anyspecs export --format json --upload --server https://myserver.com --username user --password pass
+### Compress
+
+```bash
+# Check out anyspecs compress --help for more information
+anyspecs compress [--input anyspecs.md] [--output anyspecs.specs] [--provider aihubmix/kimi/minimax/ppio/dify] ....
+```
+### Upload to share your specs
+
+> The default url is our official hub https://hub.anyspecs.cn/, you can also deploy the [ASAP](https://github.com/anyspecs/ASAP) on your own server and use it.
+
+Before your first upload, your should get your token on https://hub.anyspecs.cn/setting generate your token via `生成访问令牌`, then export your token into your environment variable. eg: `export ANYSPECS_TOKEN="44xxxxxxxxxxxxxx7a82"`.
+
+```bash
+# Default url is https://hub.anyspecs.cn/, you can also specify your server.
+# Check remote specs repo
+anyspecs upload --list
+# Search specific repo
+anyspecs upload --search "My specs"
+# Upload a file to remote server
+anyspecs upload --file anyspecs.specs
+# Upload a file to remote server with description
+anyspecs upload --file anyspecs.specs --description "My specs"
 ```
 
 ### More Functions
@@ -93,13 +116,13 @@ anyspecs export --format json --upload --server https://myserver.com --username 
 ```shell
 anyspecs --help
 # positional arguments:
-#   {list,export,compress,setup}
+#   {list,export,compress,upload,setup}
 #                         Available commands
 #     list                List all chat sessions
 #     export              Export chat sessions
 #     compress            AI-compress chat sessions into .specs format (auto-loads config)
+#     upload              Upload files to AnySpecs hub service
 #     setup               Setup and manage AI provider configurations
-
 # options:
 #   -h, --help            show this help message and exit
 #   --verbose, -v         Enable verbose logging
@@ -107,35 +130,17 @@ anyspecs --help
 
 ## Supported Sources
 
-### Cursor AI
+- Cursor AI: from Cursor's local SQLite databases
+- Claude Code: from Claude Code's JSONL history files
+- Augment Code: from VSCode's history databases
+- Codex cli: from Codex cli's history files
+- Kiro Records: from summary directory of Kiro
 
-Extracts chat history from Cursor's local SQLite databases, including:
+History mainly includes:
 - Workspace-specific conversations
 - Global chat storage
 - Composer data and bubble conversations
 - Project context and metadata
-
-### Claude Code
-
-Extracts chat history from Claude Code's JSONL history files, including:
-- User messages and AI responses
-- Tool calls and results
-- Session metadata
-- Project context
-
-### Augment Code
-
-Extracts chat history from VSCode's history files, including:
-- User messages and AI responses
-- Tool calls and results
-- Session metadata
-- Project context
-
-### Kiro Records
-
-Extracts and combines markdown documents from `.kiro` directory, including:
-- File metadata (name, modification time)
-- Automatic project summary detection
 
 ## Contributing
 
@@ -163,6 +168,11 @@ black anyspecs/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.0.5
+- Add Codex cli support
+- Add Dify workflow process
+- Add upload to remote server support
 
 ### v0.0.4
 - Add Augment Code support
