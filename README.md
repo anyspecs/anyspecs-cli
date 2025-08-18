@@ -13,7 +13,7 @@
 
 </div>
 
-AnySpecs CLI is a unified command-line tool for exporting chat history from multiple AI assistants. It currently supports **Cursor AI**, **Claude Code**, and **Kiro Records**, with support for various export formats including Markdown, HTML, and JSON.
+AnySpecs CLI is a unified command-line tool for exporting chat history from multiple AI assistants. It currently supports **Cursor AI**, **Claude Code**, **Codex cli**, **Augment** and **Kiro Records**, with support for various export formats including Markdown, HTML, and JSON.
 
 ## Features
 
