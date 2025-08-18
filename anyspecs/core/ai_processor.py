@@ -50,7 +50,6 @@ class AIProcessor:
         output_dir: Path, 
         pattern: Optional[str] = None,
         batch_size: int = 1,
-        dry_run: bool = False,
         verbose: bool = False
     ) -> bool:
         """Compress all chat files in a directory."""
@@ -65,12 +64,6 @@ class AIProcessor:
             return False
         
         print(f"📁 Found {len(files_to_process)} files to process")
-        
-        if dry_run:
-            print("🔍 Dry run mode - showing files that would be processed:")
-            for file_path in files_to_process:
-                print(f"  📄 {file_path}")
-            return True
         
         # Process files
         success_count = 0
